@@ -64,7 +64,6 @@ echo "Updating environment variables from values.json..."
 SUPABASE_URL=$(jq -r '.supabase.url' values.json)
 SUPABASE_ANON_KEY=$(jq -r '.supabase.anon_key' values.json)
 SUPABASE_SERVICE_KEY=$(jq -r '.supabase.service_role_key' values.json)
-POSTGRES_PASSWORD=$(jq -r '.supabase.password' values.json)
 
 LANGCHAIN_API_KEY=$(jq -r '.langsmith.api_key' values.json)
 LANGCHAIN_ENDPOINT=$(jq -r '.langsmith.endpoint' values.json)
