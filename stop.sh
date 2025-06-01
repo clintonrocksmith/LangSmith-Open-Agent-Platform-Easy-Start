@@ -25,12 +25,33 @@ if [ -f ".oap_pids" ]; then
     
     rm .oap_pids
 else
-    echo "No PID file found. Attempting to kill processes by port..."
-    # Fallback: kill processes by port
+    echo "No PID file found. Attempting to kill processes by pattern and port..."
+    
+    # Get ports from values.json if available
+    if [ -f "values.json" ]; then
+        TOOLS_PORT=$(jq -r '.ports.tools_agent' values.json 2>/dev/null || echo "2024")
+        SUPERVISOR_PORT=$(jq -r '.ports.supervisor_agent' values.json 2>/dev/null || echo "2025")
+        WEB_PORT=$(jq -r '.ports.web_app' values.json 2>/dev/null || echo "3000")
+    else
+        TOOLS_PORT="2024"
+        SUPERVISOR_PORT="2025" 
+        WEB_PORT="3000"
+    fi
+    
+    # Kill processes by pattern
     pkill -f "python main.py" 2>/dev/null || true
-    pkill -f "langgraph dev.*port.*2024" 2>/dev/null || true
-    pkill -f "langgraph dev.*port.*2025" 2>/dev/null || true
+    pkill -f "langgraph dev.*port.*$TOOLS_PORT" 2>/dev/null || true
+    pkill -f "langgraph dev.*port.*$SUPERVISOR_PORT" 2>/dev/null || true
+    pkill -f "yarn dev.*port.*$WEB_PORT" 2>/dev/null || true
     pkill -f "yarn dev" 2>/dev/null || true
+    
+    # Also try killing by port directly
+    lsof -ti:$TOOLS_PORT | xargs -r kill 2>/dev/null || true
+    lsof -ti:$SUPERVISOR_PORT | xargs -r kill 2>/dev/null || true  
+    lsof -ti:$WEB_PORT | xargs -r kill 2>/dev/null || true
+    lsof -ti:8080 | xargs -r kill 2>/dev/null || true  # LangConnect
+    
+    echo "Attempted to stop services on ports: $TOOLS_PORT, $SUPERVISOR_PORT, $WEB_PORT, 8080"
 fi
 
 # Stop Docker services
