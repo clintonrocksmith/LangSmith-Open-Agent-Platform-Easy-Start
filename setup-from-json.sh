@@ -68,25 +68,19 @@ create_langconnect_env() {
     local web_port="$5"
     
     print_status "Creating LangConnect .env file..."
-    cat > langconnect/.env << EOF
-# API key for the embeddings model. Defaults to OpenAI embeddings
-OPENAI_API_KEY=$openai_key
-
-# PostgreSQL configuration
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=$postgres_password
-POSTGRES_DB=langconnect_dev
-
-# CORS configuration. Must be a JSON array of strings
-ALLOW_ORIGINS=["http://localhost:$web_port"]
-
-# For authentication
-SUPABASE_URL=$supabase_url
-# This must be the service role key
-SUPABASE_KEY=$supabase_service_key
-EOF
+    if [ -f "langconnect/.env.example" ]; then
+        cp langconnect/.env.example langconnect/.env
+        # Update only the required values
+        sed -i.bak "s|OPENAI_API_KEY=.*|OPENAI_API_KEY=\"$openai_key\"|g" langconnect/.env
+        sed -i.bak "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=\"$postgres_password\"|g" langconnect/.env
+        sed -i.bak "s|SUPABASE_URL=.*|SUPABASE_URL=\"$supabase_url\"|g" langconnect/.env
+        sed -i.bak "s|SUPABASE_KEY=.*|SUPABASE_KEY=\"$supabase_service_key\"|g" langconnect/.env
+        sed -i.bak "s|ALLOW_ORIGINS=.*|ALLOW_ORIGINS=[\"http://localhost:$web_port\"]|g" langconnect/.env
+        rm -f langconnect/.env.bak
+    else
+        print_error "langconnect/.env.example not found"
+        exit 1
+    fi
 }
 
 # Function to create Tools Agent .env file
@@ -101,33 +95,28 @@ create_tools_agent_env() {
     local langsmith_project="$8"
     
     print_status "Creating Tools Agent .env file..."
-    cat > oap-langgraph-tools-agent/.env << EOF
-# ------------------LangSmith tracing------------------
-LANGCHAIN_PROJECT="$langsmith_project"
-LANGCHAIN_API_KEY=$langsmith_key
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_ENDPOINT=$langsmith_endpoint
-# -----------------------------------------------------
-
-# At least one of these must be set. Defaults to OpenAI models. Ensure this is consistent
-# with what is expected for the default models that are set in the GraphConfigPydantic class in tools_agent/agent.py
-EOF
-
-    if [ "$llm_provider" = "openai" ] || [ -n "$openai_key" ]; then
-        echo "OPENAI_API_KEY=$openai_key" >> oap-langgraph-tools-agent/.env
+    if [ -f "oap-langgraph-tools-agent/.env.example" ]; then
+        cp oap-langgraph-tools-agent/.env.example oap-langgraph-tools-agent/.env
+        # Update only the required values
+        sed -i.bak "s|LANGCHAIN_PROJECT=.*|LANGCHAIN_PROJECT=\"$langsmith_project\"|g" oap-langgraph-tools-agent/.env
+        sed -i.bak "s|LANGCHAIN_API_KEY=.*|LANGCHAIN_API_KEY=\"$langsmith_key\"|g" oap-langgraph-tools-agent/.env
+        sed -i.bak "s|LANGCHAIN_ENDPOINT=.*|LANGCHAIN_ENDPOINT=\"$langsmith_endpoint\"|g" oap-langgraph-tools-agent/.env
+        sed -i.bak "s|SUPABASE_URL=.*|SUPABASE_URL=\"$supabase_url\"|g" oap-langgraph-tools-agent/.env
+        sed -i.bak "s|SUPABASE_KEY=.*|SUPABASE_KEY=\"$supabase_service_key\"|g" oap-langgraph-tools-agent/.env
+        
+        if [ "$llm_provider" = "openai" ] || [ -n "$openai_key" ]; then
+            sed -i.bak "s|OPENAI_API_KEY=.*|OPENAI_API_KEY=\"$openai_key\"|g" oap-langgraph-tools-agent/.env
+        fi
+        
+        if [ "$llm_provider" = "anthropic" ] || [ -n "$anthropic_key" ]; then
+            sed -i.bak "s|ANTHROPIC_API_KEY=.*|ANTHROPIC_API_KEY=\"$anthropic_key\"|g" oap-langgraph-tools-agent/.env
+        fi
+        
+        rm -f oap-langgraph-tools-agent/.env.bak
+    else
+        print_error "oap-langgraph-tools-agent/.env.example not found"
+        exit 1
     fi
-    
-    if [ "$llm_provider" = "anthropic" ] || [ -n "$anthropic_key" ]; then
-        echo "ANTHROPIC_API_KEY=$anthropic_key" >> oap-langgraph-tools-agent/.env
-    fi
-    
-    cat >> oap-langgraph-tools-agent/.env << EOF
-
-# For user level authentication
-SUPABASE_URL=$supabase_url
-# Ensure this is your Supabase Service Role key
-SUPABASE_KEY=$supabase_service_key
-EOF
 }
 
 # Function to create Supervisor Agent .env file
@@ -142,30 +131,28 @@ create_supervisor_agent_env() {
     local langsmith_project="$8"
     
     print_status "Creating Supervisor Agent .env file..."
-    cat > oap-agent-supervisor/.env << EOF
-# ------------------LangSmith tracing------------------
-LANGCHAIN_PROJECT="$langsmith_project"
-LANGCHAIN_API_KEY=$langsmith_key
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_ENDPOINT=$langsmith_endpoint
-# -----------------------------------------------------
-
-EOF
-
-    if [ "$llm_provider" = "openai" ] || [ -n "$openai_key" ]; then
-        echo "OPENAI_API_KEY=$openai_key" >> oap-agent-supervisor/.env
+    if [ -f "oap-agent-supervisor/.env.example" ]; then
+        cp oap-agent-supervisor/.env.example oap-agent-supervisor/.env
+        # Update only the required values
+        sed -i.bak "s|LANGCHAIN_PROJECT=.*|LANGCHAIN_PROJECT=\"$langsmith_project\"|g" oap-agent-supervisor/.env
+        sed -i.bak "s|LANGCHAIN_API_KEY=.*|LANGCHAIN_API_KEY=\"$langsmith_key\"|g" oap-agent-supervisor/.env
+        sed -i.bak "s|LANGCHAIN_ENDPOINT=.*|LANGCHAIN_ENDPOINT=\"$langsmith_endpoint\"|g" oap-agent-supervisor/.env
+        sed -i.bak "s|SUPABASE_URL=.*|SUPABASE_URL=\"$supabase_url\"|g" oap-agent-supervisor/.env
+        sed -i.bak "s|SUPABASE_KEY=.*|SUPABASE_KEY=\"$supabase_service_key\"|g" oap-agent-supervisor/.env
+        
+        if [ "$llm_provider" = "openai" ] || [ -n "$openai_key" ]; then
+            sed -i.bak "s|OPENAI_API_KEY=.*|OPENAI_API_KEY=\"$openai_key\"|g" oap-agent-supervisor/.env
+        fi
+        
+        if [ "$llm_provider" = "anthropic" ] || [ -n "$anthropic_key" ]; then
+            sed -i.bak "s|ANTHROPIC_API_KEY=.*|ANTHROPIC_API_KEY=\"$anthropic_key\"|g" oap-agent-supervisor/.env
+        fi
+        
+        rm -f oap-agent-supervisor/.env.bak
+    else
+        print_error "oap-agent-supervisor/.env.example not found"
+        exit 1
     fi
-    
-    if [ "$llm_provider" = "anthropic" ] || [ -n "$anthropic_key" ]; then
-        echo "ANTHROPIC_API_KEY=$anthropic_key" >> oap-agent-supervisor/.env
-    fi
-    
-    cat >> oap-agent-supervisor/.env << EOF
-
-SUPABASE_URL=$supabase_url
-# Ensure this is your Supabase Service Role key
-SUPABASE_KEY=$supabase_service_key
-EOF
 }
 
 # Function to create Web Platform .env file
@@ -186,40 +173,24 @@ create_web_platform_env() {
     local langsmith_endpoint="${14}"
     
     print_status "Creating Web Platform .env file..."
-    cat > open-agent-platform/apps/web/.env << EOF
-# The base API URL for the platform.
-# Defaults to \`http://localhost:3000/api\` for development
-NEXT_PUBLIC_BASE_API_URL="http://localhost:$web_port/api"
-
-# LangSmith API key required for some admin tasks.
-LANGSMITH_API_KEY="$langsmith_key"
-# Whether or not to always use LangSmith auth (API key). If true, you will
-# not get user scoped auth by default
-NEXT_PUBLIC_USE_LANGSMITH_AUTH="false"
-# LangSmith endpoint (optional)
-LANGCHAIN_ENDPOINT="$langsmith_endpoint"
-
-# The deployments to make available in the UI
-NEXT_PUBLIC_DEPLOYMENTS=[{"id":"$tools_agent_id","deploymentUrl":"http://localhost:$tools_port","tenantId":"$tenant_id","name":"Tools Agent (Local)","isDefault":true,"defaultGraphId":"agent"},{"id":"$supervisor_agent_id","deploymentUrl":"http://localhost:$supervisor_port","tenantId":"$tenant_id","name":"Supervisor Agent (Local)","isDefault":false,"defaultGraphId":"agent"}]
-
-# The RAG API URL for the platform.
-NEXT_PUBLIC_RAG_API_URL="http://localhost:$rag_port"
-
-# The base URL to the MCP server. Do not include the \`/mcp\` at the end.
-NEXT_PUBLIC_MCP_SERVER_URL="$mcp_server_url"
-# Whether or not the MCP server requires authentication.
-# If true, all requests to the MCP server will go through a proxy
-# route first.
-NEXT_PUBLIC_MCP_AUTH_REQUIRED="$mcp_auth_required"
-
-# Supabase Authentication
-NEXT_PUBLIC_SUPABASE_ANON_KEY="$supabase_anon_key"
-NEXT_PUBLIC_SUPABASE_URL="$supabase_url"
-
-# Disable showing Google Auth in the UI
-# Defaults to false.
-NEXT_PUBLIC_GOOGLE_AUTH_DISABLED="$google_auth_disabled"
-EOF
+    if [ -f "open-agent-platform/apps/web/.env.example" ]; then
+        cp open-agent-platform/apps/web/.env.example open-agent-platform/apps/web/.env
+        # Update only the required values
+        sed -i.bak "s|NEXT_PUBLIC_BASE_API_URL=.*|NEXT_PUBLIC_BASE_API_URL=\"http://localhost:$web_port/api\"|g" open-agent-platform/apps/web/.env
+        sed -i.bak "s|LANGSMITH_API_KEY=.*|LANGSMITH_API_KEY=\"$langsmith_key\"|g" open-agent-platform/apps/web/.env
+        sed -i.bak "s|LANGCHAIN_ENDPOINT=.*|LANGCHAIN_ENDPOINT=\"$langsmith_endpoint\"|g" open-agent-platform/apps/web/.env
+        sed -i.bak "s|NEXT_PUBLIC_DEPLOYMENTS=.*|NEXT_PUBLIC_DEPLOYMENTS=[{\"id\":\"$tools_agent_id\",\"deploymentUrl\":\"http://localhost:$tools_port\",\"tenantId\":\"$tenant_id\",\"name\":\"Tools Agent (Local)\",\"isDefault\":true,\"defaultGraphId\":\"agent\"},{\"id\":\"$supervisor_agent_id\",\"deploymentUrl\":\"http://localhost:$supervisor_port\",\"tenantId\":\"$tenant_id\",\"name\":\"Supervisor Agent (Local)\",\"isDefault\":false,\"defaultGraphId\":\"agent\"}]|g" open-agent-platform/apps/web/.env
+        sed -i.bak "s|NEXT_PUBLIC_RAG_API_URL=.*|NEXT_PUBLIC_RAG_API_URL=\"http://localhost:$rag_port\"|g" open-agent-platform/apps/web/.env
+        sed -i.bak "s|NEXT_PUBLIC_MCP_SERVER_URL=.*|NEXT_PUBLIC_MCP_SERVER_URL=\"$mcp_server_url\"|g" open-agent-platform/apps/web/.env
+        sed -i.bak "s|NEXT_PUBLIC_MCP_AUTH_REQUIRED=.*|NEXT_PUBLIC_MCP_AUTH_REQUIRED=\"$mcp_auth_required\"|g" open-agent-platform/apps/web/.env
+        sed -i.bak "s|NEXT_PUBLIC_SUPABASE_ANON_KEY=.*|NEXT_PUBLIC_SUPABASE_ANON_KEY=\"$supabase_anon_key\"|g" open-agent-platform/apps/web/.env
+        sed -i.bak "s|NEXT_PUBLIC_SUPABASE_URL=.*|NEXT_PUBLIC_SUPABASE_URL=\"$supabase_url\"|g" open-agent-platform/apps/web/.env
+        sed -i.bak "s|NEXT_PUBLIC_GOOGLE_AUTH_DISABLED=.*|NEXT_PUBLIC_GOOGLE_AUTH_DISABLED=\"$google_auth_disabled\"|g" open-agent-platform/apps/web/.env
+        rm -f open-agent-platform/apps/web/.env.bak
+    else
+        print_error "open-agent-platform/apps/web/.env.example not found"
+        exit 1
+    fi
 }
 
 # Function to clone or update repository
@@ -244,6 +215,54 @@ clone_or_update_repo() {
             exit 1
         }
     fi
+}
+
+# Function to initialize virtual environment and install dependencies
+initialize_agent_env() {
+    local agent_dir="$1"
+    local agent_name="$2"
+    
+    print_status "Initializing $agent_name environment..."
+    cd "$agent_dir"
+    
+    # Create virtual environment
+    print_status "Creating virtual environment for $agent_name..."
+    uv venv || {
+        print_error "Failed to create virtual environment for $agent_name"
+        exit 1
+    }
+    
+    # Activate virtual environment and install dependencies
+    print_status "Installing dependencies for $agent_name..."
+    source .venv/bin/activate && uv sync || {
+        print_error "Failed to install dependencies for $agent_name"
+        exit 1
+    }
+    
+    cd ..
+}
+
+# Function to start LangConnect services
+start_langconnect() {
+    print_status "Starting LangConnect services..."
+    cd langconnect
+    docker-compose up -d || {
+        print_error "Failed to start LangConnect services"
+        exit 1
+    }
+    cd ..
+}
+
+# Function to start agent services
+start_agent_service() {
+    local agent_dir="$1"
+    local agent_name="$2"
+    
+    print_status "Starting $agent_name service..."
+    cd "$agent_dir"
+    source .venv/bin/activate
+    uv run langgraph dev --no-browser &
+    cd ..
 }
 
 print_header "Open Agent Platform Setup from JSON Configuration"
@@ -643,4 +662,37 @@ echo "All services stopped."
 EOF
 
 chmod +x stop-oap.sh
-echo -e "\n${GREEN}Created enhanced stop-oap.sh script to easily stop all services.${NC}" 
+echo -e "\n${GREEN}Created enhanced stop-oap.sh script to easily stop all services.${NC}"
+
+# After cloning repositories, add initialization steps
+print_header "Initializing Environments and Services"
+
+# Initialize LangConnect
+print_status "Setting up LangConnect..."
+start_langconnect
+
+# Initialize Tools Agent
+print_status "Setting up Tools Agent..."
+initialize_agent_env "oap-langgraph-tools-agent" "Tools Agent"
+start_agent_service "oap-langgraph-tools-agent" "Tools Agent"
+
+# Initialize Supervisor Agent
+print_status "Setting up Supervisor Agent..."
+initialize_agent_env "oap-agent-supervisor" "Supervisor Agent"
+start_agent_service "oap-agent-supervisor" "Supervisor Agent"
+
+# Initialize Open Agent Platform
+print_status "Setting up Open Agent Platform..."
+cd open-agent-platform
+yarn install || {
+    print_error "Failed to install Open Agent Platform dependencies"
+    exit 1
+}
+cd ..
+
+print_header "Setup Complete!"
+print_status "All services have been initialized and started."
+print_status "You can now access the Open Agent Platform at http://localhost:3000"
+print_status "Tools Agent is running at http://localhost:2024"
+print_status "Supervisor Agent is running at http://localhost:2025"
+print_status "LangConnect is running at http://localhost:8080" 
