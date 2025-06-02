@@ -11,6 +11,7 @@ RAG_PORT=$(jq -r '.ports.rag_server' values.json)
 TOOLS_PORT=$(jq -r '.ports.tools_agent' values.json)
 SUPERVISOR_PORT=$(jq -r '.ports.supervisor_agent' values.json)
 WEB_PORT=$(jq -r '.ports.web_app' values.json)
+MCP_PORT=$(jq -r '.ports.mcp_server' values.json)
 
 # Function to wait for Docker to be available
 wait_for_docker() {
@@ -65,6 +66,25 @@ start_agent_service() {
     cd ..
 }
 
+# Function to start MCP server
+start_mcp_server() {
+    echo "Starting MCP Server on port $MCP_PORT..."
+    cd mcp-server
+    
+    # Activate virtual environment
+    source bin/activate
+    
+    # Start MCP server
+    cd custom_mcp_server
+    python main.py &
+    cd ..
+    
+    cd ..
+}
+
+# Start MCP Server
+start_mcp_server
+
 # Start LangConnect
 start_langconnect
 
@@ -78,11 +98,33 @@ cd open-agent-platform/apps/web
 yarn dev --port "$WEB_PORT" &
 cd ../../..
 
+# Wait for agent services to be ready
+echo "Waiting for agent services to start..."
+sleep 5
+
+# Update agents with MCP server configuration now that services are running
+MCP_SERVER_URL=$(jq -r '.mcp.server_url' values.json)
+if [ -n "$MCP_SERVER_URL" ] && [ "$MCP_SERVER_URL" != "" ] && [ "$MCP_SERVER_URL" != "null" ]; then
+    echo "Updating agents with MCP server configuration..."
+    cd open-agent-platform/apps/web
+    
+    # Set environment variable for the update script
+    export NEXT_PUBLIC_MCP_SERVER_URL="$MCP_SERVER_URL"
+    
+    if npx tsx scripts/update-agents-mcp-url.ts; then
+        echo "Successfully updated all agents with MCP server URL: $MCP_SERVER_URL"
+    else
+        echo "Warning: Failed to update agents with MCP server URL, but continuing..."
+    fi
+    cd ../../..
+else
+    echo "No MCP server URL configured, skipping agent MCP update"
+fi
+
 echo "All services started!"
 echo "Services are available at:"
 echo "- Open Agent Platform: http://localhost:$WEB_PORT"
 echo "- Tools Agent: http://localhost:$TOOLS_PORT"
 echo "- Supervisor Agent: http://localhost:$SUPERVISOR_PORT"
 echo "- LangConnect: http://localhost:$RAG_PORT"
-echo ""
-echo "Note: MCP server is not started by this script (will run locally when needed)" 
+echo "- MCP Server: http://localhost:$MCP_PORT" 

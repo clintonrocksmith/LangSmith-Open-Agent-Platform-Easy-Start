@@ -131,19 +131,8 @@ update_env_file "open-agent-platform/apps/web/.env.local" "NEXT_PUBLIC_MCP_AUTH_
 update_env_file "open-agent-platform/apps/web/.env.local" "NEXT_PUBLIC_SUPABASE_ANON_KEY" "$SUPABASE_ANON_KEY"
 update_env_file "open-agent-platform/apps/web/.env.local" "NEXT_PUBLIC_SUPABASE_URL" "$SUPABASE_URL"
 update_env_file "open-agent-platform/apps/web/.env.local" "NEXT_PUBLIC_GOOGLE_AUTH_DISABLED" "$GOOGLE_AUTH_DISABLED" false
+update_env_file "open-agent-platform/apps/web/.env.local" "NEXT_PUBLIC_USE_LANGSMITH_AUTH" "true" false
 
-# Update agents with MCP server URL (if MCP server is configured)
-if [ -n "$MCP_SERVER_URL" ] && [ "$MCP_SERVER_URL" != "" ] && [ "$MCP_SERVER_URL" != "null" ]; then
-    echo "Updating agents with MCP server configuration..."
-    cd open-agent-platform/apps/web
-    if npx tsx scripts/update-agents-mcp-url.ts; then
-        echo "Successfully updated all agents with MCP server URL"
-    else
-        echo "Warning: Failed to update agents with MCP server URL, but continuing..."
-    fi
-    cd ../../..
-else
-    echo "No MCP server URL configured, skipping agent MCP update"
-fi
+# Note: MCP agent configuration will be updated after services start
 
 echo "Environment setup completed!" 

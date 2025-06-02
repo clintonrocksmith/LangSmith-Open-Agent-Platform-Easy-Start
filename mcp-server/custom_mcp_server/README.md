@@ -1,10 +1,10 @@
-# Custom MCP Server with Comprehensive Tools
+# Custom MCP Server with 21 Tools
 
-A powerful Model Context Protocol (MCP) server built with Python that provides a comprehensive set of tools for file operations, web scraping, API integrations, system utilities, and data processing.
+A powerful Model Context Protocol (MCP) server built with Python that provides 21 tools across 5 categories: file operations, web scraping, API integrations, system utilities, and data processing.
 
 ## 🚀 Features
 
-### 📁 File Operations
+### 📁 File Operations (8 tools)
 - **read_file**: Read file contents with encoding support
 - **write_file**: Write/append content to files with automatic directory creation
 - **search_files**: Search files by pattern and content with recursive support
@@ -14,41 +14,29 @@ A powerful Model Context Protocol (MCP) server built with Python that provides a
 - **create_directory**: Create directories with parent creation
 - **get_file_info**: Get detailed file/directory information
 
-### 🌐 Web Scraping
-- **scrape_website**: Extract content from websites with CSS selectors
-- **extract_links**: Extract all links from webpages with internal/external filtering
+### 🌐 Web Scraping (3 tools)
 - **extract_text**: Clean text extraction from webpages
-- **extract_metadata**: Extract metadata, Open Graph, and Twitter Card data
-- **extract_tables**: Extract and format table data from webpages
+- **extract_links**: Extract all links from webpages with internal/external filtering
 - **search_web**: Search the web using DuckDuckGo
 
-### 🔌 API Integrations
-- **get_weather**: Current weather and 3-day forecast for any location
+### 🔌 API Integrations (4 tools)
+- **get_weather**: Current weather information for any location
 - **get_news**: Latest tech news from Hacker News with search capability
-- **get_currency_rates**: Real-time currency exchange rates
-- **get_ip_info**: IP address geolocation and ISP information
-- **get_random_fact**: Random interesting facts
-- **generate_qr_code**: Generate QR codes for text/URLs
-- **shorten_url**: URL shortening service
 - **get_crypto_prices**: Current cryptocurrency prices with 24h changes
+- **get_ip_info**: IP address geolocation and ISP information
 
-### ⚙️ System Utilities
-- **run_command**: Safe command execution with security filtering
+### ⚙️ System Utilities (4 tools)
 - **get_system_info**: Comprehensive system information
-- **monitor_resources**: Real-time resource monitoring
 - **get_process_info**: Process information and management
 - **get_network_info**: Network interfaces and connections
-- **get_disk_usage**: Disk usage analysis
 - **check_port**: Port status checking
 
-### 📊 Data Processing
-- **process_csv**: CSV data analysis (info, filter, sort, group, describe)
+### 📊 Data Processing (5 tools)
 - **process_json**: JSON processing (format, validate, extract, transform)
 - **analyze_text**: Text analysis (word count, readability, sentiment, keywords)
-- **convert_data**: Data format conversion (CSV ↔ JSON ↔ YAML)
+- **convert_data**: Data format conversion (CSV ↔ JSON)
 - **hash_data**: Generate hash values (MD5, SHA1, SHA256, SHA512)
 - **encode_decode**: Encoding/decoding (Base64, URL encoding)
-- **generate_sample_data**: Generate sample data for testing
 
 ## 🛠️ Installation
 
@@ -75,15 +63,15 @@ cd custom_mcp_server
 python main.py
 ```
 
-The server will start on `http://0.0.0.0:8000` and display:
+The server will start on `http://0.0.0.0:8002` and display:
 ```
-🚀 Custom MCP Server running on http://0.0.0.0:8000
+🚀 Custom MCP Server running on http://0.0.0.0:8002
 📚 Available tool categories:
-  • File Operations (read, write, search, manage files)
-  • Web Scraping (extract content from websites)
-  • API Integrations (weather, news, utilities)
-  • System Utilities (commands, status, monitoring)
-  • Data Processing (CSV, JSON, text analysis)
+  • File Operations (8 tools - read, write, search, manage files)
+  • Web Scraping (3 tools - extract content from websites)
+  • API Integrations (4 tools - weather, news, crypto, IP info)
+  • System Utilities (4 tools - system info, processes, network)
+  • Data Processing (5 tools - JSON, text analysis, encoding)
 ```
 
 ## 📖 Usage Examples
@@ -182,13 +170,13 @@ This MCP server is designed to work seamlessly with the Open Agent Platform. To 
 
 1. Update your environment variables:
    ```bash
-   NEXT_PUBLIC_MCP_SERVER_URL="http://localhost:8000"
+   NEXT_PUBLIC_MCP_SERVER_URL="http://localhost:8002"
    NEXT_PUBLIC_MCP_AUTH_REQUIRED=false
    ```
 
 2. Restart your Open Agent Platform services
 
-3. The tools will be automatically available to your agents
+3. All 21 tools will be automatically available to your agents
 
 ## 🤝 Contributing
 
@@ -207,7 +195,7 @@ This project is part of the Open Agent Platform ecosystem.
 
 ### Common Issues
 
-1. **Port already in use**: Change the port in `main.py`
+1. **Port 8002 already in use**: Change the port in `main.py`
 2. **Permission denied**: Ensure proper file permissions
 3. **Module not found**: Check Python path and virtual environment
 4. **Network timeouts**: Adjust timeout values for your network
