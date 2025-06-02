@@ -12,9 +12,37 @@ TOOLS_PORT=$(jq -r '.ports.tools_agent' values.json)
 SUPERVISOR_PORT=$(jq -r '.ports.supervisor_agent' values.json)
 WEB_PORT=$(jq -r '.ports.web_app' values.json)
 
+# Function to wait for Docker to be available
+wait_for_docker() {
+    echo "Checking Docker availability..."
+    local max_attempts=30
+    local attempt=0
+    
+    while [ $attempt -lt $max_attempts ]; do
+        if docker info > /dev/null 2>&1; then
+            echo "Docker is running!"
+            return 0
+        fi
+        echo "Waiting for Docker to be available... (attempt $((attempt + 1))/$max_attempts)"
+        sleep 2
+        attempt=$((attempt + 1))
+    done
+    
+    echo "Error: Docker is not available after $max_attempts attempts"
+    echo "Please start Docker Desktop and try again"
+    return 1
+}
+
 # Function to start LangConnect
 start_langconnect() {
     echo "Starting LangConnect on port $RAG_PORT..."
+    
+    # Wait for Docker to be available
+    if ! wait_for_docker; then
+        echo "Warning: Skipping LangConnect due to Docker unavailability"
+        return 1
+    fi
+    
     cd langconnect
     docker-compose up -d
     cd ..
