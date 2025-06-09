@@ -82,8 +82,14 @@ start_mcp_server() {
     cd ..
 }
 
-# Start MCP Server
-start_mcp_server
+# Start MCP Server only if configured
+MCP_SERVER_URL=$(jq -r '.mcp.server_url' values.json)
+if [ -n "$MCP_SERVER_URL" ] && [ "$MCP_SERVER_URL" != "" ] && [ "$MCP_SERVER_URL" != "null" ]; then
+    echo "MCP Server URL configured: $MCP_SERVER_URL"
+    start_mcp_server
+else
+    echo "No MCP server URL configured, skipping MCP server startup..."
+fi
 
 # Start LangConnect
 start_langconnect
@@ -127,4 +133,6 @@ echo "- Open Agent Platform: http://localhost:$WEB_PORT"
 echo "- Tools Agent: http://localhost:$TOOLS_PORT"
 echo "- Supervisor Agent: http://localhost:$SUPERVISOR_PORT"
 echo "- LangConnect: http://localhost:$RAG_PORT"
-echo "- MCP Server: http://localhost:$MCP_PORT" 
+if [ -n "$MCP_SERVER_URL" ] && [ "$MCP_SERVER_URL" != "" ] && [ "$MCP_SERVER_URL" != "null" ]; then
+    echo "- MCP Server: http://localhost:$MCP_PORT"
+fi 

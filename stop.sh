@@ -44,20 +44,50 @@ else
     pkill -f "langgraph dev.*port.*$SUPERVISOR_PORT" 2>/dev/null || true
     pkill -f "yarn dev.*port.*$WEB_PORT" 2>/dev/null || true
     pkill -f "yarn dev" 2>/dev/null || true
+    pkill -f "next dev" 2>/dev/null || true
+    pkill -f "node.*next.*dev" 2>/dev/null || true
     
-    # Also try killing by port directly
-    lsof -ti:$TOOLS_PORT | xargs -r kill 2>/dev/null || true
-    lsof -ti:$SUPERVISOR_PORT | xargs -r kill 2>/dev/null || true  
-    lsof -ti:$WEB_PORT | xargs -r kill 2>/dev/null || true
-    lsof -ti:8080 | xargs -r kill 2>/dev/null || true  # LangConnect
+    # Kill specific processes by port, but only if they match our expected process names
+    for pid in $(lsof -ti:$TOOLS_PORT 2>/dev/null); do 
+        proc_name=$(ps -p $pid -o comm= 2>/dev/null || echo "")
+        if [[ "$proc_name" == *"python"* ]] || [[ "$proc_name" == *"uvicorn"* ]]; then
+            kill $pid 2>/dev/null || true
+        fi
+    done
+    for pid in $(lsof -ti:$SUPERVISOR_PORT 2>/dev/null); do 
+        proc_name=$(ps -p $pid -o comm= 2>/dev/null || echo "")
+        if [[ "$proc_name" == *"python"* ]] || [[ "$proc_name" == *"uvicorn"* ]]; then
+            kill $pid 2>/dev/null || true
+        fi
+    done
+    for pid in $(lsof -ti:$WEB_PORT 2>/dev/null); do 
+        proc_name=$(ps -p $pid -o comm= 2>/dev/null || echo "")
+        if [[ "$proc_name" == *"node"* ]] || [[ "$proc_name" == *"yarn"* ]]; then
+            kill $pid 2>/dev/null || true
+        fi
+    done
+    # Only kill port 8080 if it's our langconnect API, not Docker
+    for pid in $(lsof -ti:8080 2>/dev/null); do 
+        proc_name=$(ps -p $pid -o comm= 2>/dev/null || echo "")
+        if [[ "$proc_name" == *"python"* ]] || [[ "$proc_name" == *"uvicorn"* ]]; then
+            kill $pid 2>/dev/null || true
+        fi
+    done
+    for pid in $(lsof -ti:8002 2>/dev/null); do 
+        proc_name=$(ps -p $pid -o comm= 2>/dev/null || echo "")
+        if [[ "$proc_name" == *"python"* ]] || [[ "$proc_name" == *"uvicorn"* ]]; then
+            kill $pid 2>/dev/null || true
+        fi
+    done
     
     echo "Attempted to stop services on ports: $TOOLS_PORT, $SUPERVISOR_PORT, $WEB_PORT, 8080"
 fi
 
-# Stop Docker services
+# Stop specific Docker containers for LangConnect only
 if [ -d "langconnect" ]; then
     cd langconnect
-    docker-compose down
+    # Stop only our specific containers, don't affect other Docker services
+    docker-compose down 2>/dev/null || echo "LangConnect containers already stopped or not running"
     cd ..
     echo "Stopped LangConnect Docker services"
 fi
