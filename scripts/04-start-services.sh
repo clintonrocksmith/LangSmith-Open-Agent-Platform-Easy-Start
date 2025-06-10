@@ -57,8 +57,12 @@ start_agent_service() {
     echo "Starting $agent_dir on port $port..."
     cd "$agent_dir"
     
-    # Activate virtual environment
-    source .venv/bin/activate
+    # Activate virtual environment (Windows/Unix compatibility)
+    if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ -n "$WINDIR" ]]; then
+        source .venv/Scripts/activate
+    else
+        source .venv/bin/activate
+    fi
     
     # Start LangGraph service
     uv run langgraph dev --no-browser --port "$port" &
@@ -71,8 +75,12 @@ start_mcp_server() {
     echo "Starting MCP Server on port $MCP_PORT..."
     cd mcp-server
     
-    # Activate virtual environment
-    source bin/activate
+    # Activate virtual environment (Windows/Unix compatibility)
+    if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ -n "$WINDIR" ]]; then
+        source Scripts/activate
+    else
+        source bin/activate
+    fi
     
     # Start MCP server
     cd custom_mcp_server

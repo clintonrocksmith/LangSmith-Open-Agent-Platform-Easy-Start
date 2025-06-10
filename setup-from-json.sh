@@ -209,8 +209,12 @@ echo "4. Start building with the platform!"
 echo -e "\n${BLUE}To stop all services, run:${NC}"
 echo "./stop.sh"
 
-# Automatically open the browser
+# Automatically open the browser (Windows/Unix compatibility)
 print_status "Opening Open Agent Platform in your browser..."
-open "http://localhost:$WEB_PORT"
+if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ -n "$WINDIR" ]]; then
+    start "http://localhost:$WEB_PORT" 2>/dev/null || echo "Please manually open http://localhost:$WEB_PORT in your browser"
+else
+    open "http://localhost:$WEB_PORT" 2>/dev/null || xdg-open "http://localhost:$WEB_PORT" 2>/dev/null || echo "Please manually open http://localhost:$WEB_PORT in your browser"
+fi
 
 print_status "Setup completed successfully!"

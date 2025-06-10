@@ -11,8 +11,12 @@ init_agent_env() {
     echo "Creating virtual environment..."
     uv venv
     
-    # Activate virtual environment
-    source .venv/bin/activate
+    # Activate virtual environment (Windows/Unix compatibility)
+    if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ -n "$WINDIR" ]]; then
+        source .venv/Scripts/activate
+    else
+        source .venv/bin/activate
+    fi
     
     # Install dependencies
     echo "Installing dependencies..."

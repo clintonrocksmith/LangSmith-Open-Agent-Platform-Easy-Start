@@ -41,12 +41,21 @@ def register_system_tools(mcp):
             results.append(f"  Available: {memory.available / (1024**3):.2f} GB")
             results.append(f"  Used: {memory.used / (1024**3):.2f} GB ({memory.percent}%)")
             
-            # Disk info
-            disk = psutil.disk_usage('/')
-            results.append(f"\nDisk (root):")
-            results.append(f"  Total: {disk.total / (1024**3):.2f} GB")
-            results.append(f"  Used: {disk.used / (1024**3):.2f} GB ({disk.used/disk.total*100:.1f}%)")
-            results.append(f"  Free: {disk.free / (1024**3):.2f} GB")
+            # Disk info (cross-platform)
+            try:
+                if platform.system() == "Windows":
+                    disk = psutil.disk_usage('C:\\')
+                    disk_label = "Disk (C:)"
+                else:
+                    disk = psutil.disk_usage('/')
+                    disk_label = "Disk (root)"
+                    
+                results.append(f"\n{disk_label}:")
+                results.append(f"  Total: {disk.total / (1024**3):.2f} GB")
+                results.append(f"  Used: {disk.used / (1024**3):.2f} GB ({disk.used/disk.total*100:.1f}%)")
+                results.append(f"  Free: {disk.free / (1024**3):.2f} GB")
+            except Exception as e:
+                results.append(f"\nDisk: Error getting disk info - {str(e)}")
             
             # Boot time
             boot_time = datetime.fromtimestamp(psutil.boot_time())

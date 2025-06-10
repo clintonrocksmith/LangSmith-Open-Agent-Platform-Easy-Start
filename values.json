@@ -21,7 +21,8 @@
     "rag_server": 8080,
     "tools_agent": 2024,
     "supervisor_agent": 2025,
-    "web_app": 3000
+    "web_app": 3000,
+    "mcp_server": 8002
   },
   "generated_ids": {
     "tenant_id": "",

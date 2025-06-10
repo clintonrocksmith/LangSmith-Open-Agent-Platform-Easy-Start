@@ -31,11 +31,21 @@ update_env_file() {
         # Only update if the key exists in the file (don't add new keys)
         if grep -q "^$key=" "$file"; then
             if [ "$quote_value" = "true" ]; then
-                sed -i.bak "s|^$key=.*|$key=\"$value\"|" "$file"
+                # Use different sed syntax for Windows compatibility
+                if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ -n "$WINDIR" ]]; then
+                    sed -i "s|^$key=.*|$key=\"$value\"|" "$file"
+                else
+                    sed -i.bak "s|^$key=.*|$key=\"$value\"|" "$file"
+                    rm -f "${file}.bak"
+                fi
             else
-                sed -i.bak "s|^$key=.*|$key=$value|" "$file"
+                if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ -n "$WINDIR" ]]; then
+                    sed -i "s|^$key=.*|$key=$value|" "$file"
+                else
+                    sed -i.bak "s|^$key=.*|$key=$value|" "$file"
+                    rm -f "${file}.bak"
+                fi
             fi
-            rm -f "${file}.bak"
         else
             echo "Warning: $key not found in $file, skipping..."
         fi

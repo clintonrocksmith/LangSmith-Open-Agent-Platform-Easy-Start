@@ -160,7 +160,7 @@ custom_mcp_server/
 The server uses sensible defaults but can be configured by modifying the parameters in `main.py`:
 
 - **Host**: `0.0.0.0` (accepts connections from any IP)
-- **Port**: `8000`
+- **Port**: `8002`
 - **Timeout**: Various timeouts for different operations
 - **Security**: Command filtering and path validation
 
